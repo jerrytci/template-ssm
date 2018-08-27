@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.remix.ssm.mapper.PersonDao">
+
+	<!-- delete -->
+	<delete id="deletePersonById" parameterType="int">
+		delete from fbm_person where id = #{id}
+	</delete>
+	
+	<delete id="deletePersonByIds" >
+		delete from fbm_person where id in
+		<foreach item="item" index="index" collection="list" open="(" separator="," close=")">  
+  			#{item} 
+ 		</foreach>
+	</delete>
+	
+	
+	<!-- insert -->
+	<insert id="insertPerson" parameterType="Person">
+		insert into 
+		fbm_person(id,name)
+		values(#{id},#{name})
+	</insert>
+	
+	<insert id="insertPersons" parameterType="Person">
+		insert into 
+		fbm_person(id,name) values
+		<foreach collection="list" item="item" separator=",">
+			(#{item.id},#{item.name})
+		</foreach>
+	</insert>
+
+
+	<resultMap type="Person" id="mapPersonSimple">
+		<id property="id" column="id"/>
+		<result property="name" column="name"/>
+	</resultMap>
+
+	<!-- 后缀Referenced：被外部mapper引用 -->
+	<resultMap type="Person" id="mapPersonSimpleReferenced">
+		<!-- 在关联查询(嵌套结果)时避免同名, 1 需要重新命名以避免同名  2 并且需要在写sql语句时需要匹配到新命名的名字,如 select xx as 重新命名的名字。 -->
+		<id property="id" column="p_id"/>
+		<result property="name" column="p_name"/>
+	</resultMap>
+	
+	<!-- 关联查询-嵌套查询 -->
+	<!-- ！ -->
+	<!-- 1对多的1那边无法进行关联查询 -->
+	<!-- Mapping is missing column attribute for property 多 -->
+	<resultMap id="mapNQPerson" type="Person">
+		<id property="id" column="id"/>
+		<result property="name" column="name" />
+<!-- 		<collection property="mobiles" ofType="Mobile" select="org.remix.ssm.mapperper.MobileDao.selectMobileById"></collection > -->
+<!-- 		<association property="mobiles" javaType="Mobile" select="org.remix.ssm.mapperper.MobileDao.selectMobileById"></association>  -->
+	</resultMap>	
+	
+	<!-- 关联查询-嵌套结果 -->
+	<resultMap id="mapNRPerson" type="Person">
+		<id property="id" column="id"/>
+		<result property="name" column="name" />
+		<collection property="mobiles" ofType="Mobile">
+			<id property="id" column="m_id"/>
+			<result property="no" column="no" />
+			<result property="phone" column="phone" />
+			<!-- No typehandler found for property person。如果想Mobile.getPerson.需要根据id去数据库再次查询 -->
+<!-- 			<result property="person" column="person_id" /> -->
+		</collection >
+	</resultMap>	
+
+	<select id="selectAllPersonNR" resultMap="mapNRPerson">
+		select 
+			p.*,
+			m.id as m_id, m.no, m.phone, m.person_id
+		from  
+			fbm_person p 
+			join fbm_mobile m on p.id = m.person_id
+	</select>
+
+	<select id="selectPersonById" resultType="Person" parameterType="int">
+		select *
+		from
+		fbm_person p
+		where p.id = #{id};
+	</select>
+		
+	<select id="selectPersonByIdNR" resultMap="mapNRPerson">
+		select 
+			p.*,
+			m.id as m_id, m.no, m.phone, m.person_id
+		from  
+			fbm_person p 
+			join fbm_mobile m on p.id = m.person_id
+		where 
+			p.id = #{id}
+	</select>
+	
+	<select id="selectPersonByIds" resultType="Person" parameterType="list">
+		select *
+		from fbm_person p
+		where p.id in  
+ 		<foreach item="item" index="index" collection="list" open="(" separator="," close=")">  
+  			#{item}  
+ 		</foreach>
+	</select>
+	
+	<select id="selectPersonByIdsNR" resultMap="mapNRPerson">
+		select 
+			p.*,
+			m.id as m_id, m.no, m.phone, m.person_id
+		from  
+			fbm_person p 
+			join fbm_mobile m on p.id = m.person_id
+		where p.id in
+		<foreach collection="list" index="item" item="id" separator="," open="(" close=")">
+			#{id}
+		</foreach>
+	</select>
+	
+	<!-- 测试 -->	
+	<!-- 1 mybatis传入多个参数的3种方法 -->
+	<select id="selectPersonByIdAndName" resultType="Person">
+		select *
+		from
+			fbm_person p
+		where 
+			p.id = #{0} and p.name = #{1}
+	</select>
+
+	<select id="selectPersonByIdAndName2" resultType="Person">
+		select *
+		from
+		fbm_person p
+		where p.id = #{id,jdbcType=INTEGER} and p.name =
+		#{name,jdbcType=VARCHAR}
+	</select>
+
+	<select id="selectPersonByIdAndName3" resultType="Person">
+		select *
+		from
+		fbm_person p
+		where p.id = #{id,jdbcType=INTEGER} and p.name =
+		#{name,jdbcType=VARCHAR}
+	</select>
+	<!-- 测试-end -->
+	
+	<!-- update -->
+	<update id="updatePerson" parameterType="Person">
+		update fbm_person
+		set
+		name = #{name}
+		where
+		id = #{id}
+	</update>
+	
+	<update id="updatePersons">
+		replace into fbm_person(id,name)
+		values
+		<foreach collection="list" item="item" separator=",">
+			(#{item.id},#{item.name})
+		</foreach>
+	</update>
+
+</mapper >	
