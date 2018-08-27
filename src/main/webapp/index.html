@@ -3,8 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <link rel="stylesheet" href="/jslib/layui-v2.3.0/layui/css/layui.css">
 </head>
 <body>
-<cite>hello</cite>
+<cite>index</cite>
+
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+<script src="/jslib/layui-v2.3.0/layui/layui.js"></script>
+<script src="/jsutil/log/debugout.js"></script>
+
+<script>
+  layui.use(['laypage', 'layedit'], function(){
+    var laypage = layui.laypage
+      ,layedit = layui.layedit;
+
+    //do something
+  });
+
+  var d = new debugout();
+
+  function post() {
+    $.ajax({
+      type: "get",
+      url: "/index2",
+      success: function (result) {
+        alert(result);
+        d.log(result);
+      },
+      error: function (error) {
+        alert(error.msg);
+      }
+    });
+  }
+</script>
 </body>
 </html>
