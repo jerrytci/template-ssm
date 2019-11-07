@@ -1,3 +1,4 @@
 .idea/
 target/
 ssm.iml
+/classes/artifacts/ssm_war_exploded/
